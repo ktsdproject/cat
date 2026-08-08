@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โปรไฟล์น้องแมว</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Sarabun', sans-serif; background-color: #fdf6e3; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #f97316; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="p-4 max-w-md mx-auto min-h-screen pb-12">
+
+  <!-- Profile Card -->
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6 border border-orange-100">
+    <img id="cat-img" src="https://via.placeholder.com/400x250?text=Loading..." class="w-full h-64 object-cover bg-gray-200" alt="Cat Image">
+    <div class="p-5">
+      <h1 id="cat-name" class="text-2xl font-bold text-gray-800">กำลังโหลด...</h1>
+      <p id="cat-desc" class="text-gray-600 mt-2 text-sm leading-relaxed"></p>
+    </div>
+  </div>
+
+  <!-- Form Action -->
+  <div class="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-orange-100">
+    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">📝 บันทึกการดูแลน้อง</h2>
+    
+    <label class="block text-sm font-semibold text-gray-700 mb-1">กิจกรรม:</label>
+    <select id="action" class="w-full p-3 border border-gray-200 rounded-xl mb-4 bg-gray-50 focus:ring-2 focus:ring-orange-400 outline-none transition">
+      <option value="🍚 ให้ข้าว/ให้น้ำ">🍚 ให้ข้าว/ให้น้ำ</option>
+      <option value="🍢 ให้แมวเลีย/ขนม">🍢 ให้แมวเลีย/ขนม</option>
+      <option value="🧻 เช็ดตัว/ทำความสะอาด">🧻 เช็ดตัว/ทำความสะอาด</option>
+      <option value="💬 แวะมาหา/รีวิว">💬 แวะมาหา/รีวิว</option>
+    </select>
+
+    <label class="block text-sm font-semibold text-gray-700 mb-1">คอมเมนต์ / รีวิว:</label>
+    <textarea id="comment" rows="2" class="w-full p-3 border border-gray-200 rounded-xl mb-4 bg-gray-50 focus:ring-2 focus:ring-orange-400 outline-none transition" placeholder="เช่น วันนี้น้องกินหมดจาน..."></textarea>
+
+    <label class="block text-sm font-semibold text-gray-700 mb-1">อัปโหลดรูปถ่าย (ไม่บังคับ):</label>
+    <input type="file" id="upload-image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 mb-5 cursor-pointer transition">
+
+    <button onclick="submitForm()" id="submit-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-md transition duration-200">
+      บันทึกข้อมูล
+    </button>
+  </div>
+
+  <!-- History Logs -->
+  <div class="bg-white rounded-2xl shadow-sm p-5 border border-orange-100">
+    <h2 class="text-lg font-bold text-gray-800 mb-4">📜 ประวัติย้อนหลัง</h2>
+    <div id="logs-container" class="space-y-4">
+      <div class="text-center py-4"><span class="loader"></span></div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDfTlWaCiQwRYP83cado_3hCYyIGkzwG6c-vJ7fx1TYFzRNAL6UmtY0-zWpwnJsawVoQ/exec'; 
+
+    async function loadData() {
+      try {
+        const response = await fetch(SCRIPT_URL + "?action=getData");
+        const data = await response.json();
+        
+        document.getElementById('cat-name').innerText = data.profile.name;
+        document.getElementById('cat-img').src = data.profile.imageUrl;
+        document.getElementById('cat-desc').innerText = data.profile.description;
+
+        var container = document.getElementById('logs-container');
+        container.innerHTML = '';
+        
+        if(data.logs.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-center text-sm py-4">ยังไม่มีใครบันทึกเลย เป็นคนแรกสิ! 🎉</p>';
+          return;
+        }
+
+        data.logs.forEach(function(log) {
+          var item = document.createElement('div');
+          item.className = "border-b border-gray-100 pb-4 last:border-0";
+          
+          var logHTML = `
+            <div class="flex justify-between items-center text-xs text-gray-400 mb-1.5"><span>⏰ ${log[0]}</span></div>
+            <div class="font-bold text-gray-800 text-sm">${log[1]}</div>
+            ${log[2] ? `<div class="text-gray-600 bg-orange-50/50 p-2.5 rounded-lg mt-2 mb-2 text-sm border border-orange-100/50">${log[2]}</div>` : ''}
+          `;
+          
+          if(log[3]) {
+            logHTML += `<img src="${log[3]}" class="w-full h-48 object-cover rounded-xl mt-3 shadow-sm border border-gray-200" alt="Review">`;
+          }
+          
+          item.innerHTML = logHTML;
+          container.appendChild(item);
+        });
+      } catch (error) {
+        document.getElementById('logs-container').innerHTML = '<p class="text-red-500 text-center py-4">ไม่สามารถโหลดข้อมูลได้</p>';
+      }
+    }
+
+    async function submitForm() {
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loader" style="width:20px;height:20px;border-width:3px;"></span> กำลังบันทึก...';
+      btn.classList.replace('bg-orange-500', 'bg-gray-400');
+
+      var file = document.getElementById('upload-image').files[0];
+      var payload = {
+        action: document.getElementById('action').value,
+        comment: document.getElementById('comment').value,
+        base64Data: null,
+        fileName: null
+      };
+
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+          payload.base64Data = e.target.result.split(',')[1];
+          payload.fileName = "cat_" + Date.now() + "." + file.name.split('.').pop();
+          sendPostRequest(payload);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        sendPostRequest(payload);
+      }
+    }
+
+    async function sendPostRequest(payload) {
+      try {
+        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        resetForm();
+      } catch (error) {
+        alert('บันทึกสำเร็จ (หรืออาจมีปัญหา CORS แต่ข้อมูลเข้าแล้ว)');
+        resetForm();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('comment').value = '';
+      document.getElementById('upload-image').value = '';
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = false;
+      btn.innerHTML = 'บันทึกข้อมูล';
+      btn.classList.replace('bg-gray-400', 'bg-orange-500');
+      document.getElementById('logs-container').innerHTML = '<div class="text-center py-4"><span class="loader"></span></div>';
+      loadData(); 
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
