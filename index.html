@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>โปรไฟล์น้องแมว</title>
+  <title>ระบายน้ำ</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: 'Sarabun', sans-serif; background-color: #fdf6e3; }
@@ -14,7 +14,11 @@
 </head>
 <body class="p-4 max-w-md mx-auto min-h-screen pb-12">
 
-  <!-- Profile Card -->
+  <div id="image-modal" class="fixed inset-0 z-50 bg-black/85 hidden justify-center items-center p-4 backdrop-blur-sm" onclick="closeModal()">
+    <button class="absolute top-4 right-4 text-white text-4xl hover:text-orange-500 font-bold focus:outline-none transition">&times;</button>
+    <img id="modal-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+  </div>
+
   <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6 border border-orange-100">
     <img id="cat-img" src="https://via.placeholder.com/400x250?text=Loading..." class="w-full h-64 object-cover bg-gray-200" alt="Cat Image">
     <div class="p-5">
@@ -22,8 +26,6 @@
       <p id="cat-desc" class="text-gray-600 mt-2 text-sm leading-relaxed"></p>
     </div>
   </div>
-
-  <!-- Form Action -->
   <div class="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-orange-100">
     <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">📝 บันทึกการดูแลน้อง</h2>
     
@@ -57,6 +59,18 @@
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDfTlWaCiQwRYP83cado_3hCYyIGkzwG6c-vJ7fx1TYFzRNAL6UmtY0-zWpwnJsawVoQ/exec'; 
 
+
+    function openModal(imageSrc) {
+      document.getElementById('modal-img').src = imageSrc;
+      document.getElementById('image-modal').classList.remove('hidden');
+      document.getElementById('image-modal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('image-modal').classList.add('hidden');
+      document.getElementById('image-modal').classList.remove('flex');
+    }
+
     async function loadData() {
       try {
         const response = await fetch(SCRIPT_URL + "?action=getData");
@@ -78,14 +92,21 @@
           var item = document.createElement('div');
           item.className = "border-b border-gray-100 pb-4 last:border-0";
           
+          // แปลง Format วันที่ให้แสดงผลเป็นภาษาไทยสวยงาม
+          let dateObj = new Date(log[0]);
+          let timeString = isNaN(dateObj) ? log[0] : dateObj.toLocaleString('th-TH', { 
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+          });
+          
           var logHTML = `
-            <div class="flex justify-between items-center text-xs text-gray-400 mb-1.5"><span>⏰ ${log[0]}</span></div>
+            <div class="flex justify-between items-center text-xs text-gray-400 mb-1.5"><span>⏰ ${timeString} น.</span></div>
             <div class="font-bold text-gray-800 text-sm">${log[1]}</div>
             ${log[2] ? `<div class="text-gray-600 bg-orange-50/50 p-2.5 rounded-lg mt-2 mb-2 text-sm border border-orange-100/50">${log[2]}</div>` : ''}
           `;
           
+          // เปลี่ยนรูปให้คลิกได้ และมี Cursor แบบนิ้วชี้
           if(log[3]) {
-            logHTML += `<img src="${log[3]}" class="w-full h-48 object-cover rounded-xl mt-3 shadow-sm border border-gray-200" alt="Review">`;
+            logHTML += `<img src="${log[3]}" onclick="openModal('${log[3]}')" class="w-full h-48 object-cover rounded-xl mt-3 shadow-sm border border-gray-200 cursor-pointer hover:opacity-85 transition duration-200" alt="Review">`;
           }
           
           item.innerHTML = logHTML;
