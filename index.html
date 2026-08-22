@@ -67,7 +67,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'ใhttps://script.google.com/macros/s/AKfycbzDfTlWaCiQwRYP83cado_3hCYyIGkzwG6c-vJ7fx1TYFzRNAL6UmtY0-zWpwnJsawVoQ/exec'; 
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDfTlWaCiQwRYP83cado_3hCYyIGkzwG6c-vJ7fx1TYFzRNAL6UmtY0-zWpwnJsawVoQ/exec'; 
     
     let currentPage = 1;
 
@@ -167,7 +167,7 @@
       btn.classList.add('hidden');
       spinner.classList.remove('hidden');
       
-      currentPage++; // เพิ่มเลขหน้า
+      currentPage++;
       await fetchPageData(currentPage, true);
       
       spinner.classList.add('hidden');
